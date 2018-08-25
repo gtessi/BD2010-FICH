@@ -1,0 +1,119 @@
+create table AutoresBadSeller
+(
+	IDAutor		smallint	not null,
+	au_idViejo	varchar(12)	not null,
+	au_lname	varchar(40)	not null,
+	au_fname	varchar(20)	not null,
+	phone		char(12)	not null
+)
+
+create table setup
+(
+	tabla	varchar(40)	not null,
+	ultimo	integer		not null
+)
+
+create trigger InsertBadSeller
+	on authors
+	for delete
+	as
+		declare @ultimo integer
+		declare @au_idViejo varchar(12),
+			@au_lname varchar(40),
+			@au_fname varchar(20)
+		select @ultimo = ultimo
+			from setup
+			where tabla = 'AutoresBadSeller'
+		select @au_idViejo = au_id, @au_lname = au_lname, @au_fname = au_fname
+			from deleted
+		insert AutoresBadSeller (IDAutor, au_idViejo, au_lname, au_fname)
+			values (ultimo + 1, @au_idViejo, @au_lname, @au_fname)
+		update setup set ultimo = @ultimo +1
+
+create procedure EliminarPublicacion
+	@title_id varchar(6)
+	as
+		declare @error int
+		delete sales where title_id = @title_id
+
+		set @error=@@error
+		if @error !=0 goto lblError
+		delete roysched where title_id=@title_id
+
+		set @error=@@error
+		if @error !=0 goto lblError
+		delete titleauthor where title_id=@title_id
+
+		set @error=@@error
+		if @error !=0 goto lblError
+		delete titles where title_id=@title_id
+
+		set @error=@@error
+		if @error !=0 goto lblError
+		
+		return 0
+		
+		lblError:
+		return @error
+
+begin transaction
+declare curAutores cursor
+	for select au_id
+		from authors
+open curAutores
+fetch next from curAutores
+	into @au_id,@au_fname,@au_lname -- meter poco aca
+while @@fetch_status = 0
+	begin
+	print 'procesando autor' + @au_lname
+	declare curPublicac
+		for select title
+			from titles T inner join titleauthor TA on T.title_id=TA.title_id
+				      inner join authors A on TA.au_id=A.au_id
+			where authors.au_id = @au_id
+	declare @title_id varchar (6)
+	open curPublicac
+	fetch next curPublicac
+	into @title_id
+	while @@fetch_status = 0
+		begin
+		print 'procesando publicacion'+ @title_id
+		declare @retorno int
+		exec @retorno = EliminarPublicacion @title_id
+		if @retorno
+			begin
+			rollback transaction
+			return  -- salgo del while SP entero directamente
+			end
+		fetch next from curPublicac
+		into title_id
+		end
+	close curPublicac
+	deallocate curPublicac
+	exec @retorno = EliminarAutor @au_id
+	if @retorno != 0
+		begin
+		rollback transaction
+		return
+		end
+	end
+close curAutores
+deallocate curAutores
+commit transaction
+
+
+select A.au_id, A.au_lname
+	from authors A
+	where (25 > all (select sum(qty)
+				from sales inner join titles
+					on sales.title_id=titles.title_id
+				inner join titleauthor
+					on titles.title_id=titleauthor.title_id
+				where year(ord_date) in (1993,1994) and
+					titleauthor.au_id=A.au_id
+				group by titles.title_id)) and
+		A.au_id not in (select TA1.au_id
+					from titleauthor TA1, titleauthor TA2
+					where TA1.title_id = TA2.title_id and
+					TA1.au_id != TA2.au_id) and
+		A.au_id in (select au_id from titleauthor)

@@ -1,0 +1,140 @@
+create database propiedad2
+go
+
+use propiedad2
+go
+
+/*==============================================================*/
+/* Table: CALLE                                                 */
+/*==============================================================*/
+create table CALLE (
+   CODIGOCALLE          smallint             not null,
+   NOMBRECALLE          varchar(40)          not null,
+   constraint PK_CALLE primary key (CODIGOCALLE)
+)
+go
+
+/*==============================================================*/
+/* Table: MANZANA                                               */
+/*==============================================================*/
+create table MANZANA (
+   NROMANZANA           smallint             not null,
+   DESCRIPCCION         varchar(40)          not null,
+   constraint PK_MANZANA primary key (NROMANZANA)
+)
+go
+
+/*==============================================================*/
+/* Table: PARCELACATASTRAL                                      */
+/*==============================================================*/
+create table PARCELACATASTRAL (
+   IDUC                 integer              not null,
+   PARCELA              smallint             not null,
+   LOTE                 char(5)              not null,
+   constraint PK_PARCELACATASTRAL primary key (IDUC)
+)
+go
+
+/*==============================================================*/
+/* Table: PERSONA                                               */
+/*==============================================================*/
+create table PERSONA (
+   TIPODOCUMENTO        char(1)              not null,
+   NRODOCUMENTO         integer              not null,
+   APENOMBRE            varchar(40)          not null,
+   constraint PK_PERSONA primary key (TIPODOCUMENTO, NRODOCUMENTO)
+)
+go
+
+/*==============================================================*/
+/* Table: PROPIEDADHORIZONTAL                                   */
+/*==============================================================*/
+create table PROPIEDADHORIZONTAL (
+   IDUC                 integer              not null,
+   IDUC2                integer              not null,
+   UNIDAD               smallint             not null,
+   PISO                 smallint             null,
+   DEPARTAMENTO         char(5)              null,
+   constraint PK_PROPIEDADHORIZONTAL primary key (IDUC, IDUC2)
+)
+go
+
+/*==============================================================*/
+/* Table: PROPIETARIO                                           */
+/*==============================================================*/
+create table PROPIETARIO (
+   IDUC                 integer              not null,
+   TIPODOCUMENTO        char(1)              not null,
+   NRODOCUMENTO         integer              not null,
+   ITEM                 smallint             not null,
+   FECHADESDE           datetime             not null,
+   FECHAHASTA           datetime             null,
+   constraint PK_PROPIETARIO primary key (IDUC, ITEM)
+)
+go
+
+/*==============================================================*/
+/* Table: UNIDADCATASTRAL                                       */
+/*==============================================================*/
+create table UNIDADCATASTRAL (
+   NROINICIO            smallint             not null,
+   IDUC                 integer              not null,
+   NROPORTAL            smallint             null,
+   FECHAALTA            datetime             not null,
+   FECHABAJA            datetime             null,
+   constraint PK_UNIDADCATASTRAL primary key (IDUC)
+)
+go
+
+/*==============================================================*/
+/* Table: VEREDA                                                */
+/*==============================================================*/
+create table VEREDA (
+   NROMANZANA           smallint             not null,
+   CODIGOCALLE          smallint             not null,
+   NROINICIO            smallint             not null,
+   NROFIN               smallint             not null,
+   LADOPAR              bit                  not null,
+   constraint PK_VEREDA primary key (NROINICIO)
+)
+go
+
+alter table PARCELACATASTRAL
+   add constraint fk_parcelacatastral_unidadcatastral foreign key (IDUC)
+      references UNIDADCATASTRAL (IDUC)
+go
+
+alter table PROPIEDADHORIZONTAL
+   add constraint fk_propiedadhorizontal_parcelacatastral foreign key (IDUC2)
+      references PARCELACATASTRAL (IDUC)
+go
+
+alter table PROPIEDADHORIZONTAL
+   add constraint fk_propiedadhorizontal_unidadcatastral foreign key (IDUC)
+      references UNIDADCATASTRAL (IDUC)
+go
+
+alter table PROPIETARIO
+   add constraint fk_propietario_unidadcatastral foreign key (IDUC)
+      references UNIDADCATASTRAL (IDUC)
+go
+
+alter table PROPIETARIO
+   add constraint fk_propietario_persona foreign key (TIPODOCUMENTO, NRODOCUMENTO)
+      references PERSONA (TIPODOCUMENTO, NRODOCUMENTO)
+go
+
+alter table UNIDADCATASTRAL
+   add constraint fk_unidadcatastral_vereda foreign key (NROINICIO)
+      references VEREDA (NROINICIO)
+go
+
+alter table VEREDA
+   add constraint fk_vereda_calle foreign key (CODIGOCALLE)
+      references CALLE (CODIGOCALLE)
+go
+
+alter table VEREDA
+   add constraint fk_vereda_manzana foreign key (NROMANZANA)
+      references MANZANA (NROMANZANA)
+go

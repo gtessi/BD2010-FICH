@@ -1,0 +1,62 @@
+--1--
+
+select * from pubs.dbo.authors
+
+--2--
+
+declare @mens varchar(40)
+set @mens = 'Just testing...'
+select @mens
+GO
+
+select @mens
+GO
+
+--3--
+
+declare @cant smallint
+update ventas
+	set cant = cant +100,
+	@cant = cant
+	where codvent =1
+
+print @cant
+
+--4--
+
+print 'el ultimo codigo de error registrado fue: '+ convert(varchar(10),@@error)
+
+--5--
+select price,title_id from titles
+
+declare @price money
+
+select  @price=price from titles where title_id='BU1111'
+if @price < 10
+	print 'El precio es menor.'
+else
+	if @price=10
+		print 'El precio es igual.'
+	else
+		print 'El precio es mayor.'
+
+
+--6--
+create table t1(
+	ID 		int		identity(1,1),
+	FechaHora	datetime	not null default getdate()
+	)
+
+declare @cont int
+set @cont = 0
+while @cont<100
+begin
+	insert into t1 values(default)
+	set @cont=@cont+1
+end
+
+select * from t1
+
+
+--7--	
+			

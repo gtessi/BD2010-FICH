@@ -1,0 +1,114 @@
+--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////--
+-----------------------------------------------------------------------------------------------------------------------------------------
+---  _________________
+--   \     GUIA 2     \
+--   /_____TABLAS_____/
+
+select * from cliente
+select * from proveed
+select * from ventas
+
+-- 1 -- Creacion de una tabla Cliente
+create table cliente(
+	codCli 	int 		not null,
+	nombre 	varchar(30)	not null,
+	ape 	varchar(30) 	not null,
+	dir 	varchar(40) 	not null,
+	CodPos 	char(9) 	null default 3000
+	)
+
+create table productos(
+	codProd		int		not null,
+	descr		varchar(3) 	not null,
+	precUnit	money		not null,
+	stock		smallint	not null,
+	)
+
+create table pedidos(
+	numPed		int		not null,
+	fechaPed	datetime	not null,
+	codCli		int		not null,
+	)
+
+create table detalle(
+	codDetalle	int		not null,
+	numPed		int		not null,
+	codProd		int		not null,
+	cant		int		not null,
+	precioTotal	money		null,
+	)
+
+create table proveed(
+	codProv 	int 		IDENTITY(1,1),
+	razonSoc	varchar(30)	not null,
+	dir		varchar(30)	not null,
+	)
+
+-- 2 y 3 --
+
+insert into cliente (codCli, nombre, ape, dir) values (1, 'LOPEZ', 'JOSE MARIA', 'Gral. Paz 3124')
+insert into cliente values (2, 'GERVASOLI', 'MAURO', 'San Luis 472', null)
+
+-- 4 --
+insert into proveed values('FLUKE INGENIERIA', 'RUTA 9 Km. 80')
+Insert into proveed values('PVD PATCHES', 'Pinar de Rocha 1154')
+
+-- 5 --
+create table ventas(
+	CodVent		int 		identity(1,1),
+	fechaVent	datetime	not null default getdate(),
+	usuarioDB	varchar(30)	not null default user,
+	cant		int		null
+	)
+
+drop table ventas
+-- 6 --
+insert into ventas values (default, default,100)
+insert into ventas (cant) values (200)
+
+select * from ventas
+
+-- 7 --
+select codCli, nombre, ape, dir, CodPos
+	into clistafe
+	from cliente
+	where (CodPos = 3000)
+
+select * from clistafe
+
+-- 8 --
+insert clistafe 
+	select *
+	from cliente
+
+-- si ya agregamos los que tienen codpost 3000, ahora solo nos quedan poner los que no lo tienen o tiene null
+
+insert clistafe 
+	select *
+	from cliente
+	where (codPos <> 3000) or (codPos is null)
+
+-- 9 --
+
+update cliente set dir = 'The Crystal Method 168' where dir like '%1%'
+
+--10--
+
+update cliente set CodPos = default
+
+--11--
+delete clistafe where codpos is null
+
+--12--
+
+create table #Tempi(
+	Codcli 		int		not null,
+	Ape		varchar(30)	not null)
+
+--13--
+
+select au_lname, address, city
+	into #AC
+	from authors
+
+select * from #AC

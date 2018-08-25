@@ -1,0 +1,235 @@
+create database propiedad
+use propiedad
+
+/*==============================================================*/
+/* table : calle                                                */
+/*==============================================================*/
+create table calle (
+codigocalle          smallint             not null,
+nombrecalle          char(40)             not null,
+constraint pk_calle primary key  (codigocalle)
+)
+go
+
+/*==============================================================*/
+/* table : manzana                                              */
+/*==============================================================*/
+create table manzana (
+nromanzana           smallint             not null,
+descripcion          char(40)             not null,
+constraint pk_manzana primary key  (nromanzana)
+)
+go
+
+/*==============================================================*/
+/* table : parcelacatastral                                     */
+/*==============================================================*/
+create table parcelacatastral (
+nromanzana           smallint             not null,
+parcela              smallint             not null,
+codigocalle          smallint             not null,
+nroinicio            smallint             not null,
+lote                 char(5)              not null,
+nroportal            smallint             not null,
+fechaalta            datetime             not null,
+fechabaja            datetime             null,
+constraint pk_parcelacatastral primary key  (nromanzana, parcela)
+)
+go
+
+/*==============================================================*/
+/* table : personas                                             */
+/*==============================================================*/
+create table personas (
+tipodocumento        char(1)              not null,
+nrodocumento         integer              not null,
+apenombre            char(40)             not null,
+constraint pk_personas primary key  (tipodocumento, nrodocumento)
+)
+go
+
+/*==============================================================*/
+/* table : propiedadhorizontal                                  */
+/*==============================================================*/
+create table propiedadhorizontal (
+nromanzana           smallint             not null,
+parcela              smallint             not null,
+unidad               smallint             not null,
+piso                 smallint             null,
+departamento         char(5)              null,
+fechaalta            datetime                 not null,
+fechabaja            datetime                 null,
+constraint pk_propiedadhorizontal primary key  (nromanzana, parcela, unidad)
+)
+go
+
+/*==============================================================*/
+/* table : propietarioparcela                                   */
+/*==============================================================*/
+create table propietarioparcela (
+nromanzana           smallint             not null,
+parcela              smallint             not null,
+tipodocumento        char(1)              not null,
+nrodocumento         integer              not null,
+propparceladesde     datetime                 not null,
+propparcelahasta     datetime                 null,
+constraint pk_propietarioparcela primary key  (nromanzana, parcela, tipodocumento, nrodocumento, propparceladesde)
+)
+go
+
+/*==============================================================*/
+/* table : propietarioph                                        */
+/*==============================================================*/
+create table propietarioph (
+nromanzana           smallint             not null,
+parcela              smallint             not null,
+unidad               smallint             not null,
+tipodocumento        char(1)              not null,
+nrodocumento         integer              not null,
+propphdesde          datetime                 not null,
+propphhasta          datetime                 null,
+constraint pk_propietarioph primary key  (nromanzana, parcela, unidad, tipodocumento, nrodocumento, propphdesde)
+)
+go
+
+/*==============================================================*/
+/* table : vereda                                               */
+/*==============================================================*/
+create table vereda (
+codigocalle          smallint             not null,
+nroinicio            smallint             not null,
+nromanzana           smallint             not null,
+nrofin               smallint             not null,
+ladopar              bit                  not null,
+constraint pk_vereda primary key  (nroinicio, codigocalle)
+)
+go
+
+
+alter table propiedadhorizontal
+   add constraint fk_ph_parcela foreign key (nromanzana, parcela)
+      references parcelacatastral (nromanzana, parcela)
+go
+
+alter table propietarioparcela
+   add constraint fk_propietario_parcela foreign key (nromanzana, parcela)
+      references parcelacatastral (nromanzana, parcela)
+go
+
+alter table propietarioparcela
+   add constraint fk_propiparce_persona foreign key (tipodocumento, nrodocumento)
+      references personas (tipodocumento, nrodocumento)
+go
+
+alter table propietarioph
+   add constraint fk_propiph_persona foreign key (tipodocumento, nrodocumento)
+      references personas (tipodocumento, nrodocumento)
+go
+
+alter table propietarioph
+   add constraint fk_propiph_ph foreign key (nromanzana, parcela, unidad)
+      references propiedadhorizontal (nromanzana, parcela, unidad)
+go
+
+alter table vereda
+   add constraint fk_vereda_calle foreign key (codigocalle)
+      references calle (codigocalle)
+go
+
+alter table vereda
+   add constraint fk_vereda_manzana foreign key (nromanzana)
+      references manzana (nromanzana)
+go
+
+alter table parcelacatastral
+   add constraint fk_parcela_manzana foreign key (nromanzana)
+      references manzana (nromanzana)
+go
+
+alter table parcelacatastral
+   add constraint fk_parcela_vereda foreign key (nroinicio, codigocalle)
+      references vereda (nroinicio, codigocalle)
+go
+
+
+
+
+
+-- CALLE
+insert calle (codigocalle, nombrecalle) values (1, 'General Paz')
+insert calle (codigocalle, nombrecalle) values (2, 'Lavalle')
+insert calle (codigocalle, nombrecalle) values (3, 'Crespo')
+insert calle (codigocalle, nombrecalle) values (4, 'Colon')
+insert calle (codigocalle, nombrecalle) values (5, 'Almafuerte')
+
+
+
+-- MANZANA
+insert manzana (nromanzana, descripcion) values (1, 'manzana1')
+insert manzana (nromanzana, descripcion) values (2, 'manzana2')
+
+-- VEREDA
+insert vereda (codigocalle, nroinicio, nromanzana,nrofin,ladopar) values (1,0,1,1000,1)
+insert vereda (codigocalle, nroinicio, nromanzana,nrofin,ladopar) values (2,0,2,1000,1)
+insert vereda (codigocalle, nroinicio, nromanzana,nrofin,ladopar) values (4,0,2,1000,0)
+
+-- PARCELA
+insert parcelacatastral (nromanzana, parcela, codigocalle, nroinicio, lote, nroportal, fechaalta)
+	values (1,1,1,0,1,1,'1/1/2000')
+insert parcelacatastral (nromanzana, parcela, codigocalle, nroinicio, lote, nroportal, fechaalta)
+	values (1,2,1,0,2,1,'1/1/2000')
+insert parcelacatastral (nromanzana, parcela, codigocalle, nroinicio, lote, nroportal, fechaalta)
+	values (2,3,2,0,3,1,'1/1/2000')
+
+
+-- PROPIEDAD HORIZONTAL
+insert propiedadhorizontal (nromanzana,parcela, unidad, fechaalta)
+	values (1,1,1,'1/1/2000')
+insert propiedadhorizontal (nromanzana,parcela, unidad, fechaalta)
+	values (1,2,2,'1/1/2000')
+insert propiedadhorizontal (nromanzana,parcela, unidad, fechaalta)
+	values (1,2,3,'1/1/2000')
+insert propiedadhorizontal (nromanzana,parcela, unidad, fechaalta)
+	values (2,3,4,'1/1/2000')
+insert propiedadhorizontal (nromanzana,parcela, unidad, fechaalta)
+	values (2,3,5,'1/1/2000')
+
+
+-- PERSONAS
+insert personas (tipodocumento, nrodocumento, apenombre)
+	values (1,1,'Patricio')
+insert personas (tipodocumento, nrodocumento, apenombre)
+	values (1,2,'Carlos')
+insert personas (tipodocumento, nrodocumento, apenombre)
+	values (1,3,'Hector')
+insert personas (tipodocumento, nrodocumento, apenombre)
+	values (1,4,'Martin')
+insert personas (tipodocumento, nrodocumento, apenombre)
+	values (1,5,'Juan')
+insert personas (tipodocumento, nrodocumento, apenombre)
+	values (1,6,'Pedro')
+
+-- PROPIETARIO PARCELA
+insert propietarioparcela (nromanzana,parcela, tipodocumento,nrodocumento,propparceladesde)
+	values (1,1,1,1,'1/1/2000')
+insert propietarioparcela (nromanzana,parcela, tipodocumento,nrodocumento,propparceladesde)
+	values (1,2,1,1,'1/1/2000')
+insert propietarioparcela (nromanzana,parcela, tipodocumento,nrodocumento,propparceladesde)
+	values (2,3,1,3,'1/1/2000')
+insert propietarioparcela (nromanzana,parcela, tipodocumento,nrodocumento,propparceladesde)
+	values (2,3,1,5,'1/1/2000')
+
+
+-- PROPIETARIO PROPIEDAD HORIZONTAL
+insert propietarioph (nromanzana,parcela,unidad,tipodocumento,nrodocumento,propphdesde)
+	values (1,1,1,1,1,'1/1/2000')
+insert propietarioph (nromanzana,parcela,unidad,tipodocumento,nrodocumento,propphdesde)
+	values (1,2,2,1,2,'1/1/2000')
+insert propietarioph (nromanzana,parcela,unidad,tipodocumento,nrodocumento,propphdesde)
+	values (1,2,3,1,2,'1/1/2000')
+insert propietarioph (nromanzana,parcela,unidad,tipodocumento,nrodocumento,propphdesde)
+	values (2,3,4,1,3,'1/1/2000')
+insert propietarioph (nromanzana,parcela,unidad,tipodocumento,nrodocumento,propphdesde)
+	values (2,3,4,1,4,'1/1/2000')
+insert propietarioph (nromanzana,parcela,unidad,tipodocumento,nrodocumento,propphdesde)
+	values (2,3,5,1,5,'1/1/2000')

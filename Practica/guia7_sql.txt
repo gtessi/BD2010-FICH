@@ -1,0 +1,129 @@
+--tablas utilizadas!!
+
+create table cliente(
+	codCli 	int 		not null,
+	nombre 	varchar(30)	not null,
+	ape 	varchar(30) 	not null,
+	dir 	varchar(40) 	not null,
+	CodPos 	char(9) 	null default 3000
+	)
+
+create table productos(
+	codProd		int		not null,
+	descr		varchar(3) 	not null,
+	precUnit	money		not null,
+	stock		smallint	not null,
+	)
+
+create table pedidos(
+	numPed		int		not null,
+	fechaPed	datetime	not null,
+	codCli		int		not null,
+	)
+
+create table detalle(
+	codDetalle	int		not null,
+	numPed		int		not null,
+	codProd		int		not null,
+	cant		int		not null,
+	precioTotal	money		null,
+	)
+
+create table proveed(
+	codProv 	int 		IDENTITY(1,1),
+	razonSoc	varchar(30)	not null,
+	dir		varchar(30)	not null,
+	)
+
+
+--1--
+create trigger t1
+	on cliente
+	for insert, delete
+	as
+		raiserror('La cantidad de filas afectadas es %d', 16, 1, @@rowcount)
+
+insert into cliente values (100, 'Juan', 'Jose', 'San Martin 1111',default)
+
+--2 y 3 (modificado)--
+
+sp_help t1
+
+select 	name tabla, 
+	case deltrig
+		when 0 then 'No Posee'
+		else object_name(deltrig)
+	end
+	'Trig de del',
+	case instrig
+		when 0 then 'No Posee'
+		else object_name(instrig)
+	end
+	'Trig de ins',
+	case updtrig
+		when 0 then 'No Posee'
+		else object_name(updtrig)
+	end
+	'Trig de upd',
+	case seltrig
+		when 0 then 'No Posee'
+		else object_name(seltrig)
+	end
+	'Trig de sel'
+	
+	from sysobjects 
+	where type='u'     --info sobre triggers
+
+--4--
+
+sp_helptext t1
+
+--5--
+
+select * into autores from authors
+
+create trigger t2
+	on autores
+	for insert,delete,update
+	as
+		raiserror('%d filas afectadas', 16, 1, @@rowcount)
+
+delete autores where au_id= '172-32-1176' or au_id='213-46-8915'
+
+
+--6--
+
+create trigger tr_autores_iu
+	on autores
+	for insert, update
+	as
+		print 'Datos insertados en transaction log '
+		select * from inserted
+		print 'Datos eliminados en transaction log '
+		select * from deleted
+
+insert into autores values('111-11-111', 'Lyne', 'J', '415 658-9878', 'A', 'B', 'CA', '99999', 1)
+
+update autores
+	set au_fname = 'Nicanor' where au_id='111-11-111'
+
+-- 7 --
+
+create trigger tr_productos_iu
+	on productos
+	for insert, update
+	as
+		if (0 > (select stock from inserted))
+		begin
+			print 'ERROR'
+			rollback
+		end
+
+
+insert into productos values (1, 'C', 5, 10)       	-testeeeos
+insert into productos values (1, 'C', 5, -10)		-testeooos	
+update productos					-testeeooos
+	set stock = -10 where codprod=1
+
+
+

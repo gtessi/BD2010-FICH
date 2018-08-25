@@ -1,0 +1,29 @@
+create table provincia(
+	id_provincia	smallint	not null	 primary key,
+	nom_provincia 	char(30)	not null,
+	check (id_provincia<150))
+
+create table localidad(
+	id_localidad 	smallint	not null,
+	id_provincia	smallint	not null	references provincia(id_provincia),  --FK en el mismo renglon -- 
+	nom_localidad	char(40)	not null,
+	primary key(id_localidad,id_provincia))
+
+create table persona(
+	tipodoc		char(1)		not null,
+	nrodoc		integer		not null,
+	sexo		char(1)		not null,
+	id_localidad	smallint,
+	id_provincia	smallint,
+	primary key (tipodoc,nrodoc,sexo),
+	constraint fk1 foreign key (id_localidad, id_provincia) references localidad(id_localidad, id_provincia)) -- FK --
+
+drop table persona
+drop table localidad
+drop table provincia
+alter table persona drop constraint fk1
+
+
+insert into provincia values (149,'Mendoza')
+
+select * from provincia

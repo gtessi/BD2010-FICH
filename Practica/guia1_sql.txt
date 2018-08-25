@@ -1,0 +1,94 @@
+--/////////////////////////////////////////////////////////////
+----------------------------------
+---  _________________
+--   \     GUIA 1     \
+--   /____CONSULTA____/     --
+
+
+-- MUESTRA TODAS LAS COLUMNAS DE LA TABLA "authors" --
+Select * from authors
+select * from titles order by price
+Select * from employee order by hire_date
+Select * from publishers
+select * from sales
+
+-- MUESTRA LA COLUMNA "au_lname" DE LA TABLA "authors" --
+Select au_lname  FROM authors
+
+-- MUESTRA LA COLUMNA "au_lname" y "au_fname" DE LA TABLA "authors" y las ordena descendente por la columna "au_lname" --
+Select au_lname, au_fname  FROM authors ORDER BY au_lname DESC
+
+-- 1 --
+SELECT title_id, title, type, price*1.08 FROM titles ORDER BY type, title
+
+-- 2 --
+SELECT title_id, title, type, price*1.08 'PRECIO ACTUALIZADO' FROM titles ORDER BY type, title
+
+-- 3 --
+SELECT title_id, title, type, price*1.08 'PRECIO ACTUALIZADO' FROM titles ORDER BY 'PRECIO ACTUALIZADO' desc
+
+-- 4 --
+SELECT title_id, title, type, price*1.08 'PRECIO ACTUALIZADO' FROM titles ORDER BY 4 desc
+
+-- 5 --
+SELECT au_fname + ' ' + au_lname 'Listado de Autores' FROM authors ORDER BY 1
+
+-- 7 --
+SELECT title_id + 'posee un valor de $' + convert(varchar,price) from titles order by price
+
+-- 8 --
+exec sp_help titles
+
+-- 9 --
+exec sp_columns authors
+
+-- 10 --
+select title, price from titles where (price <= 13) order by price
+
+--11 --
+Select lname, hire_date from employee where hire_date between '01/01/91' and '01/01/92'
+                             --otra forma--
+Select lname, hire_date from employee where (hire_date >= '01/01/91') and (hire_date < '01/01/92')
+
+-- 12 --
+select au_id, address, city from authors where au_id in('172-32-1176', '238-95-7766')
+
+select au_id, address, city from authors where au_id not in('172-32-1176', '238-95-7766')
+
+-- 13 --
+select title_id, title from titles where title like ('%Computer%')
+
+-- 14 --
+select pub_name, city, state from publishers where state is null
+
+--15 --
+exec sp_columns publishers
+-- luego me fijo en la columna "IN_NULLABLE".
+
+--CONTAR LA CANTIDAD DE TIPO DE TITULOS QUE HAY USANDO LA FUNCION DISTINCT PARA NO REPETIR--
+select count(distinct type) from titles.
+
+-- 16 --
+select count(price) from titles
+
+-- 17 --
+select count(distinct price) from titles
+
+-- 18 --
+select fname, lname from employee where (hire_date = (select max(hire_date) from employee))
+
+-- 19 --
+select sum(price*ytd_sales) recaudacion from titles
+
+-- 20 --
+select sum(qty) ventas from sales where (month(ord_date)=6)
+
+-- 21--
+
+select name from sysobjects where type = 'U' --TODOS LOS OBJETOS DEFINIDOS EN PUBS
+select name from sysobjects where type = 'S' --TABLAS DE DATOS DEL SISTEMA
+select name from sysobjects where type = 'V'-- NOSE
+select name from sysobjects where type = 'P'-- NOSE
+select name from sysobjects where type = 'TR'-- NOSE
+select name from sysobjects where type = 'K'-- NOSE
+select name from sysobjects where type = 'FK'-- NOSE

@@ -1,0 +1,184 @@
+declare curPub cursor
+	for
+		select price from titles
+	for update of price
+
+open curpub
+close curpub
+deallocate curpub
+
+----------------------------------------------------------------------
+      --cursor1.sql-- 
+----------------------------------------------------------------------
+
+declare curPublicaciones cursor
+	for select title, type, price
+	from titles
+	order  by type, title
+	for read only
+
+open curpublicaciones
+set NoCount On
+declare @type Char(12),
+	@price money,
+	@title varchar(80),
+	@Cad varchar(40)
+
+print 'Titulo                         Precio'
+print '-------------------------------------'
+
+fetch next
+	from curpublicaciones
+	into @title, @type, @price
+
+while @@fetch_status=0
+	begin
+		if @type='business'
+			select @price=@price*1.25
+		--end if
+
+		if @price is null
+			select @Cad=convert(char(22), @title) + ' No posee precio'
+		else
+			select @Cad=convert(char(22), @title) + Convert(char(7),@price)
+		--end if
+
+		print @Cad
+
+		fetch next
+			from curpublicaciones
+			into @title, @type, @price
+end
+--end while
+
+close curpublicaciones
+deallocate curpublicaciones
+
+
+--------------------------------------------------------------------------------
+--Updatetitle.sql
+--------------------------------------------------------------------------------
+declare curPublicaciones cursor
+	for
+		select title
+		from titles
+
+declare @title varchar(80)
+
+open curpublicaciones
+fetch next
+	from curpublicaciones
+	into @title
+
+while @@fetch_status=0
+	begin
+		if @title = 'The gourmet microwave'
+			update titles
+				set title = title + ' Parte II'
+				where current of curpublicaciones
+
+		fetch next
+			from curpublicaciones
+			into @title
+	end
+
+close curpublicaciones
+deallocate curpublicaciones
+
+-------------------------------------------------------------------------------------------
+-- EJERCICIO 1--
+-------------------------------------------------------------------------------------------
+select * from titles
+
+declare curpub cursor
+	for
+		select price
+		from titles
+		where pub_id='0736'
+
+declare @price	money
+
+open curpub
+fetch next
+	from curpub
+	into @price
+
+while @@fetch_status=0
+begin
+	if @price>10
+			update titles
+				set price=price*0.75
+				where current of curpub
+		else
+			update titles
+				set price=price*1.25
+				where current of curpub
+
+	fetch next
+		from curpub
+		into @price
+
+end
+
+close curpub
+deallocate curpub
+
+
+-------------------------------------------------------------------
+--EJERCICIO 2
+-------------------------------------------------------------------
+
+select title, type,price, ytd_sales from titles
+
+declare curpub cursor
+	for select ytd_sales, type, title from titles
+
+open curpub
+
+declare @ytd_sales int,
+	@type varchar(120),
+	@title varchar(120),
+	@count int,
+	@cad varchar(120)
+
+set @count=0
+
+fetch next
+	from curpub
+	into @ytd_sales,@type,@title
+
+while @@fetch_status=0
+begin
+	set @count=@count+1
+	if @ytd_sales>1000
+		update titles
+			set price = price*0.9
+			where current of curpub
+	else
+		if (@type = 'popular_comp' or @title like ('%computer%'))
+			update titles
+				set price = price*0.5
+				where current of curpub
+		else
+			update titles
+				set price =price*0.75
+				where current of curpub
+
+fetch next
+	from curpub
+	into @ytd_sales, @type, @title
+
+end
+
+set @cad = 'Cantidad de actualizaciones: ' + convert(char(4),@count)
+select title,type, price, ytd_sales from titles 
+print @cad
+
+close curpub
+deallocate curpub
+
+
+
+--------------------------------------------------------------------------------
+
+				 

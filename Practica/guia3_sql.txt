@@ -1,0 +1,124 @@
+select title, pub_name 
+	from titles inner join publishers on titles.pub_id = publishers.pub_id
+
+select * from titleauthor
+select * from publishers
+select * from authors
+select * from titles
+select * from employee
+select * from sales
+
+-- 1 --
+
+select A.au_lname, A.au_fname, T.title
+	from 	titleauthor TA, authors A, titles T
+	where 	TA.au_id = A.au_id and TA.title_id = T.title_id
+	order by au_fname
+
+-- 2 --
+
+select P.pub_name, E.fname, E.lname
+	from publishers P, employee E
+	where P.pub_id = E.pub_id and E.job_lvl>=200
+
+-- 3 --
+ 
+select A.au_fname, A.au_lname, sum(ytd_sales*price) 'Ingresos'
+	from titles T, authors A, titleauthor TA
+	where TA.title_id = T.title_id and A.au_id = TA.au_id
+	group by au_lname, au_fname
+	order by Ingresos desc
+
+-- 4 --
+
+select type, avg(price) 'Media de Precio'
+	from titles
+	group by type
+	having avg(price)>12
+
+-- 5 --
+
+select fname, lname 
+	from employee
+	where hire_date = (select max(hire_date) from employee)
+
+-- 6 --
+
+select pub_name 
+	from publishers P, titles T 
+	where T.type = 'business' and P.pub_id = T.pub_id 
+	group by pub_name
+
+select pub_name
+	from publishers P inner join titles T
+	on P.pub_id = T.pub_id and T.type = 'business'
+	group by pub_name
+
+-- 7 --
+
+select title
+	from titles T
+	where T.title <> ALL(select titles.title
+			     from titles, sales S
+			     where S.title_id = T.title_id and year(S.ord_date) in (1993,1994))
+	group by title
+
+-- 8 --
+
+select T.title, P.pub_name, price
+	from titles T, publishers P
+	where T.price < (select avg(price) from titles where pub_id = T.pub_id) and P.pub_id = T.pub_id
+	order by pub_name desc
+
+ -- 9 --
+
+select T.title, P.pub_name, price
+	from titles T, publishers P
+	where (T.price < (select avg(price) from titles where pub_id = T.pub_id) and P.pub_id = T.pub_id)
+		or T.title_id <> all(select title_id from sales)
+	order by pub_name desc
+
+-- 10 --
+
+select * from authors
+
+select au_fname 'Nombre', au_lname 'Apellido', 'Posee contrato?' = CASE
+									when contract = 1 then 'Si'
+									when contract = 0 then 'No'
+									else 'no aclara'
+									end
+	from authors
+
+-- 11 --
+
+select lname, 'Nivel' = CASE
+			when job_lvl< 100 then 'Puntaje menor a 100'
+			when job_lvl between 100 and 200 then 'Puntaje entre 100 y 200'
+			when job_lvl>200 then 'Puntaje mayor a 200'
+			end
+	from employee
+	order by job_lvl
+
+-- 12 --							
+
+select * from authors
+select * from titleauthor order by title_id
+select * from titles
+
+create view Autores as
+	select A.au_lname 'Apellido', A.au_fname 'Nombre', A.phone 'Teléfono', T.title 'Título', T.type 'Tipo', T.price 'Precio'
+		from authors A, titles T, titleauthor TA
+		where TA.au_id = A.au_id and TA.title_id = T.title_id  
+
+select * from autores
+
+-- 13 --
+
+select * from titles order by pub_id
+select * from titleauthor
+create view Moon as
+	select T.title, A.au_lname + ' ' + A.au_fname 'Autor'
+	from titles T, authors A, titleauthor TA
+	where T.pub_id = 0736 and T.title_id = TA.title_id and A.au_id = TA.au_id
+
+select * from Moon
